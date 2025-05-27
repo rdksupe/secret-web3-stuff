@@ -2,12 +2,12 @@ from flask import Flask, render_template, request, jsonify
 import networkx as nx
 import json
 import plotly
-import plotly.graph_objs as go
 from datetime import datetime
 from main import get_wallet_transactions
 from llm_utils import summarize_profile, generate_handle, analyze_entities
 from collections import Counter
 import pandas as pd
+import plotly.graph_objects as go
 
 app = Flask(__name__)
 
@@ -73,11 +73,17 @@ def analyze_network():
     
     try:
         txs = get_wallet_transactions(wallet_address, limit=100)
-        graph_json = generate_graph_data(txs)
-        return jsonify({'graph': graph_json})
+        # Return the serialized figure directly
+        graph_data = visualize_function_transitions(txs)
+        return jsonify({'graph': graph_data})
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import traceback
+        traceback_str = traceback.format_exc()
+        return jsonify({
+            'error': f'Graph error: {str(e)}', 
+            'traceback': traceback_str
+        }), 500
 
 @app.route('/analyze/timeline', methods=['POST'])
 def analyze_timeline():
@@ -148,87 +154,72 @@ def create_basic_profile(wallet_address):
 
 # Remove the original create_wallet_profile function as it's now split
 
-def generate_graph_data(transactions):
-    """Generate network graph data for Plotly visualization"""
-    funcs = [tx['Function'] for tx in transactions if tx.get('Function')]
-    print(funcs) 
-
-
+def visualize_function_transitions(txs):
+    print(f"Visualizing function transitions for {len(txs)} transactions")
     
-    # Create edges between consecutive function calls
-    edges = {}
-    for a, b in zip(funcs, funcs[1:]):
-        key = (a, b)
-        edges[key] = edges.get(key, 0) + 1
-
-    print(f"Edges found: {len(edges)}")  # Debug output
+    # fetch formatted txs
+    funcs = [tx['Function'] for tx in txs if tx['Function']]
     
-    # Create a NetworkX graph
+    # build transition graph
     G = nx.DiGraph()
-    for (source, target), weight in edges.items():
-        G.add_edge(source, target, weight=weight)
+    for a, b in zip(funcs, funcs[1:]):
+        G.add_edge(a, b, weight=G[a][b]['weight']+1 if G.has_edge(a, b) else 1)
     
-    # Layout with spring algorithm
-    pos = nx.spring_layout(G)
+    # get position layout
+    pos = nx.spring_layout(G, k=0.5, seed=42)
     
-    # Create edge traces
-    edge_traces = []
+    # create edge traces
+    edge_x = []
+    edge_y = []
+    edge_weights = []
+    
     for edge in G.edges(data=True):
-        source, target, data = edge
-        x0, y0 = pos[source]
-        x1, y1 = pos[target]
-        weight = data.get('weight', 1)
-        
-        edge_trace = go.Scatter(
-            x=[x0, x1, None],
-            y=[y0, y1, None],
-            line=dict(width=weight*1.5, color='#888'),
-            hoverinfo='none',
-            mode='lines')
-        edge_traces.append(edge_trace)
-    print(f"Edge traces created: {len(edge_traces)}")  # Debug output
+        x0, y0 = pos[edge[0]]
+        x1, y1 = pos[edge[1]]
+        edge_x.extend([x0, x1, None])
+        edge_y.extend([y0, y1, None])
+        edge_weights.append(edge[2]['weight'])
     
-    # Create node traces
+    edge_trace = go.Scatter(
+        x=edge_x, y=edge_y,
+        line=dict(width=1, color='#888'),
+        hoverinfo='none',
+        mode='lines')
+    
+    # create node traces
+    node_x = []
+    node_y = []
+    node_text = []
+    
+    for node in G.nodes():
+        x, y = pos[node]
+        node_x.append(x)
+        node_y.append(y)
+        node_text.append(node)
+    
     node_trace = go.Scatter(
-        x=[pos[node][0] for node in G.nodes()],
-        y=[pos[node][1] for node in G.nodes()],
-        text=[node for node in G.nodes()],
+        x=node_x, y=node_y,
         mode='markers+text',
         hoverinfo='text',
+        text=node_text,
+        textposition="top center",
         marker=dict(
-            showscale=True,
-            colorscale='YlGnBu',
             size=20,
-            colorbar=dict(
-                thickness=15,
-                title='Node Connections',
-                xanchor='left',
-                titleside='right'
-            ),
+            color='skyblue',
             line_width=2))
-    print(f"Node positions: {pos}")  # Debug output
     
-    # Color nodes by the number of connections
-    node_adjacencies = []
-    for node in G.nodes():
-        node_adjacencies.append(len(list(G.neighbors(node))))
-    print(f"Node adjacencies: {node_adjacencies}")  # Debug output
-    
-    node_trace.marker.color = node_adjacencies
-    node_trace.marker.size = [10 + 5*adj for adj in node_adjacencies]
-    
-    # Create the figure
-    fig = go.Figure(data=edge_traces + [node_trace],
+    # create figure
+    fig = go.Figure(data=[edge_trace, node_trace],
                     layout=go.Layout(
-                        title='Function Call Network',
-                        titlefont_size=16,
                         showlegend=False,
                         hovermode='closest',
-                        margin=dict(b=20,l=5,r=5,t=40),
+                        margin=dict(b=0,l=0,r=0,t=40),
                         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
-                    )
+                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)
+                    ))
     
+    # Don't parse as JSON before returning, just return the figure object
+    # Return the figure's data and layout directly
     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
 def generate_timeline_data(transactions):
@@ -268,4 +259,4 @@ def generate_timeline_data(transactions):
     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
+    app.run(debug=False, host='0.0.0.0', port=8080)
