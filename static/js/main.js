@@ -294,8 +294,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function displayNetworkGraph(graphJson) {
-        if (graphJson) {
-            Plotly.newPlot('networkGraph', JSON.parse(graphJson));
+        if (!graphJson) {
+            document.getElementById('networkGraph').innerHTML = 
+                '<div class="alert alert-info">Function network graph is currently disabled.</div>';
+            return;
+        }
+        
+        try {
+            // Parse the stringified graph data
+            const graphData = JSON.parse(graphJson);
+            
+            // Check if we have valid graph data
+            if (graphData && graphData.data && graphData.layout) {
+                Plotly.newPlot('networkGraph', graphData.data, graphData.layout);
+            } else {
+                throw new Error('Invalid graph data format');
+            }
+        } catch (e) {
+            console.error('Error displaying network graph:', e);
+            document.getElementById('networkGraph').innerHTML = 
+                `<div class="alert alert-danger">Error displaying graph: ${e.message}</div>`;
         }
     }
     
