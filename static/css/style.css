@@ -1,0 +1,122 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+.search-card {
+    border-radius: 12px;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.search-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card-header {
+    background-color: #3498db;
+    border-bottom: none;
+}
+
+.truncate-address {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.tag {
+    background-color: #e9ecef;
+    border-radius: 16px;
+    padding: 4px 12px;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.tag-entity {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.tag-username {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.tag-company {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.markdown-content {
+    line-height: 1.6;
+}
+
+.markdown-content h1, 
+.markdown-content h2, 
+.markdown-content h3, 
+.markdown-content h4 {
+    margin-top: 1rem;
+}
+
+.markdown-content ul, 
+.markdown-content ol {
+    padding-left: 1.5rem;
+}
+
+.insight-item {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-left: 4px solid #3498db;
+}
+
+.example-link {
+    color: #6c757d;
+    text-decoration: none;
+}
+
+.example-link:hover {
+    color: #3498db;
+    text-decoration: underline;
+}
+
+/* Animation for loading */
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.95);
+        opacity: 0.7;
+    }
+}
+
+.pulse-animation {
+    animation: pulse 2s infinite ease-in-out;
+}
