@@ -25,8 +25,8 @@ def summarize_profile(profile: dict) -> str:
 
 def generate_handle(profile: dict) -> str:
     prompt = (
-        "/no_think Generate a unique, wallet-themed social handle (no spaces) for a user "
-        "based on this profile:\n\n"
+        "/no_think Generate a single unique, wallet-themed social handle (no spaces) for a user "
+        "based on this profile. Only reply with a single username. Nothing else.:\n\n"
         f"{profile}\n\nHandle:"
     )
     resp = client.chat.completions.create(model="mistral-saba-24b",
