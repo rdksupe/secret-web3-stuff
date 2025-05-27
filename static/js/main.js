@@ -96,16 +96,16 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         
         // Fetch network graph
-        // fetchNetworkGraph(walletAddress)
-        //     .then(data => {
-        //         displayNetworkGraph(data.graph);
-        //         document.getElementById('networkLoading').style.display = 'none';
-        //     })
-        //     .catch(error => {
-        //         document.getElementById('networkLoading').style.display = 'none';
-        //         document.getElementById('networkError').style.display = 'block';
-        //         document.getElementById('networkError').textContent = `Error: ${error.message}`;
-        //     });
+        fetchNetworkGraph(walletAddress)
+            .then(data => {
+                displayNetworkGraph(data.graph);
+                document.getElementById('networkLoading').style.display = 'none';
+            })
+            .catch(error => {
+                document.getElementById('networkLoading').style.display = 'none';
+                document.getElementById('networkError').style.display = 'block';
+                document.getElementById('networkError').textContent = `Error: ${error.message}`;
+            });
         
         // Fetch timeline graph
         fetchTimelineGraph(walletAddress)
@@ -293,11 +293,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // function displayNetworkGraph(graphJson) {
-    //     if (graphJson) {
-    //         Plotly.newPlot('networkGraph', JSON.parse(graphJson));
-    //     }
-    // }
+    function displayNetworkGraph(graphJson) {
+        if (graphJson) {
+            Plotly.newPlot('networkGraph', JSON.parse(graphJson));
+        }
+    }
     
     function displayTimelineGraph(timelineJson) {
         if (timelineJson) {
