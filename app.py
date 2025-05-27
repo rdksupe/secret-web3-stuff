@@ -62,10 +62,9 @@ def analyze_llm_insights():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Network graph endpoint temporarily disabled
-"""
 @app.route('/analyze/network-graph', methods=['POST'])
 def analyze_network():
+    """Generate network visualization"""
     data = request.get_json()
     wallet_address = data.get('wallet_address', '')
     
@@ -79,17 +78,18 @@ def analyze_network():
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-"""
-
-# Placeholder endpoint to respond with an empty graph
-@app.route('/analyze/network-graph', methods=['POST'])
-def analyze_network():
-    """Return a simple message instead of a graph"""
-    return jsonify({'graph': None, 'message': 'Function network graph disabled'})
 
 @app.route('/analyze/timeline', methods=['POST'])
 def analyze_timeline():
     """Generate timeline visualization"""
+    data = request.get_json()
+    wallet_address = data.get('wallet_address', '')
+    
+    if not wallet_address:
+        return jsonify({'error': 'No wallet address provided'}), 400
+    
+    try:
+        txs = get_wallet_transactions(wallet_address, limit=100)
         timeline_json = generate_timeline_data(txs)
         return jsonify({'timeline': timeline_json})
     
@@ -148,88 +148,88 @@ def create_basic_profile(wallet_address):
 
 # Remove the original create_wallet_profile function as it's now split
 
-# def generate_graph_data(transactions):
-#     """Generate network graph data for Plotly visualization"""
-#     funcs = [tx['Function'] for tx in transactions if tx.get('Function')]
-#     print(funcs) 
+def generate_graph_data(transactions):
+    """Generate network graph data for Plotly visualization"""
+    funcs = [tx['Function'] for tx in transactions if tx.get('Function')]
+    print(funcs) 
 
 
     
-#     # Create edges between consecutive function calls
-#     edges = {}
-#     for a, b in zip(funcs, funcs[1:]):
-#         key = (a, b)
-#         edges[key] = edges.get(key, 0) + 1
+    # Create edges between consecutive function calls
+    edges = {}
+    for a, b in zip(funcs, funcs[1:]):
+        key = (a, b)
+        edges[key] = edges.get(key, 0) + 1
 
-#     print(f"Edges found: {len(edges)}")  # Debug output
+    print(f"Edges found: {len(edges)}")  # Debug output
     
-#     # Create a NetworkX graph
-#     G = nx.DiGraph()
-#     for (source, target), weight in edges.items():
-#         G.add_edge(source, target, weight=weight)
+    # Create a NetworkX graph
+    G = nx.DiGraph()
+    for (source, target), weight in edges.items():
+        G.add_edge(source, target, weight=weight)
     
-#     # Layout with spring algorithm
-#     pos = nx.spring_layout(G)
+    # Layout with spring algorithm
+    pos = nx.spring_layout(G)
     
-#     # Create edge traces
-#     edge_traces = []
-#     for edge in G.edges(data=True):
-#         source, target, data = edge
-#         x0, y0 = pos[source]
-#         x1, y1 = pos[target]
-#         weight = data.get('weight', 1)
+    # Create edge traces
+    edge_traces = []
+    for edge in G.edges(data=True):
+        source, target, data = edge
+        x0, y0 = pos[source]
+        x1, y1 = pos[target]
+        weight = data.get('weight', 1)
         
-#         edge_trace = go.Scatter(
-#             x=[x0, x1, None],
-#             y=[y0, y1, None],
-#             line=dict(width=weight*1.5, color='#888'),
-#             hoverinfo='none',
-#             mode='lines')
-#         edge_traces.append(edge_trace)
-#     print(f"Edge traces created: {len(edge_traces)}")  # Debug output
+        edge_trace = go.Scatter(
+            x=[x0, x1, None],
+            y=[y0, y1, None],
+            line=dict(width=weight*1.5, color='#888'),
+            hoverinfo='none',
+            mode='lines')
+        edge_traces.append(edge_trace)
+    print(f"Edge traces created: {len(edge_traces)}")  # Debug output
     
-#     # Create node traces
-#     node_trace = go.Scatter(
-#         x=[pos[node][0] for node in G.nodes()],
-#         y=[pos[node][1] for node in G.nodes()],
-#         text=[node for node in G.nodes()],
-#         mode='markers+text',
-#         hoverinfo='text',
-#         marker=dict(
-#             showscale=True,
-#             colorscale='YlGnBu',
-#             size=20,
-#             colorbar=dict(
-#                 thickness=15,
-#                 title='Node Connections',
-#                 xanchor='left',
-#                 titleside='right'
-#             ),
-#             line_width=2))
-#     print(f"Node positions: {pos}")  # Debug output
+    # Create node traces
+    node_trace = go.Scatter(
+        x=[pos[node][0] for node in G.nodes()],
+        y=[pos[node][1] for node in G.nodes()],
+        text=[node for node in G.nodes()],
+        mode='markers+text',
+        hoverinfo='text',
+        marker=dict(
+            showscale=True,
+            colorscale='YlGnBu',
+            size=20,
+            colorbar=dict(
+                thickness=15,
+                title='Node Connections',
+                xanchor='left',
+                titleside='right'
+            ),
+            line_width=2))
+    print(f"Node positions: {pos}")  # Debug output
     
-#     # Color nodes by the number of connections
-#     node_adjacencies = []
-#     for node in G.nodes():
-#         node_adjacencies.append(len(list(G.neighbors(node))))
-#     print(f"Node adjacencies: {node_adjacencies}")  # Debug output
+    # Color nodes by the number of connections
+    node_adjacencies = []
+    for node in G.nodes():
+        node_adjacencies.append(len(list(G.neighbors(node))))
+    print(f"Node adjacencies: {node_adjacencies}")  # Debug output
     
-#     node_trace.marker.color = node_adjacencies
-#     node_trace.marker.size = [10 + 5*adj for adj in node_adjacencies]
+    node_trace.marker.color = node_adjacencies
+    node_trace.marker.size = [10 + 5*adj for adj in node_adjacencies]
     
-#     # Create the figure
-#     fig = go.Figure(data=edge_traces + [node_trace],
-#                     layout=go.Layout(
-#                         title='Function Call Network',
-#                         titlefont_size=16,
-#                         showlegend=False,
-#                         hovermode='closest',
-#                         margin=dict(b=20,l=5,r=5,t=40),
-#                         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-#                         yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
-#                     )
+    # Create the figure
+    fig = go.Figure(data=edge_traces + [node_trace],
+                    layout=go.Layout(
+                        title='Function Call Network',
+                        titlefont_size=16,
+                        showlegend=False,
+                        hovermode='closest',
+                        margin=dict(b=20,l=5,r=5,t=40),
+                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
+                    )
     
-#     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
 def generate_timeline_data(transactions):
     """Generate timeline visualization for Plotly"""
