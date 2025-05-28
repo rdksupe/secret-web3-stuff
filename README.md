@@ -20,10 +20,10 @@ flowchart TD
     end
 
     subgraph API["Flask API Endpoints"]
-        ProfileAPI[/analyze/profile]
-        LLMInsightsAPI[/analyze/llm-insights]
-        NetworkAPI[/analyze/network-graph]
-        TimelineAPI[/analyze/timeline]
+        ProfileAPI["analyze/profile"]
+        LLMInsightsAPI["analyze/llm-insights"]
+        NetworkAPI["analyze/network-graph"]
+        TimelineAPI["analyze/timeline"]
     end
 
     subgraph DataSources["Data Sources"]
