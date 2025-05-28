@@ -2,15 +2,96 @@
 
 This project is primarily aimed at profiling of wallet addresses on the aptos blockhain platform. This was chosen primariliy because of the existence of KGeN's player wallet addresses being based there along with the governing smart contracts.
 
+## System Architecture
 
-## Architecture Overview
+The following diagram illustrates the data flow and component interactions:
 
-The application uses a modular architecture with separate components:
+```mermaid
+flowchart TD
+    subgraph User["User Interface"]
+        UI[Web Browser]
+    end
 
-- **Backend**: Flask API server with separate endpoints for different analysis tasks
-- **Frontend**: Responsive Bootstrap UI with asynchronous data loading
-- **LLM Integration**: AI-powered wallet analysis using the Groq API
-- **Visualization**: Interactive graphs and charts using Plotly
+    subgraph Frontend["Frontend Components"]
+        ProfileView[Wallet Profile]
+        LLMView[LLM Insights]
+        NetworkGraphView[Function Network]
+        TimelineView[Transaction Timeline]
+    end
+
+    subgraph API["Flask API Endpoints"]
+        ProfileAPI[/analyze/profile]
+        LLMInsightsAPI[/analyze/llm-insights]
+        NetworkAPI[/analyze/network-graph]
+        TimelineAPI[/analyze/timeline]
+    end
+
+    subgraph DataSources["Data Sources"]
+        AptosAPI["Aptos Blockchain API"]
+    end
+
+    subgraph Processing["Data Processing"]
+        TxProcessor["Transaction Processor"]
+        ProfileGenerator["Profile Generator"]
+    end
+
+    subgraph LLM["LLM Analysis"]
+        GroqAPI["Groq API"]
+        SabaModel["Mistral-Saba-24B"]
+        QwenModel["Qwen-QWQ-32B"]
+    end
+
+    subgraph Viz["Visualization"]
+        NetworkX["NetworkX Graph"]
+        PlotlyJS["Plotly Charts"]
+    end
+
+    %% User flow
+    UI --> ProfileView & LLMView & NetworkGraphView & TimelineView
+    
+    %% Frontend to API connections
+    ProfileView --> ProfileAPI
+    LLMView --> LLMInsightsAPI
+    NetworkGraphView --> NetworkAPI
+    TimelineView --> TimelineAPI
+    
+    %% API to processing flow
+    ProfileAPI & LLMInsightsAPI & NetworkAPI & TimelineAPI --> TxProcessor
+    TxProcessor --> ProfileGenerator
+    TxProcessor --> AptosAPI
+    
+    %% LLM integration
+    LLMInsightsAPI --> GroqAPI
+    GroqAPI --> SabaModel
+    GroqAPI --> QwenModel
+    
+    %% Visualization generation
+    NetworkAPI --> NetworkX
+    NetworkX --> PlotlyJS
+    TimelineAPI --> PlotlyJS
+    
+    %% Data flow from Aptos
+    AptosAPI --> TxProcessor
+    
+    %% Processing to frontend
+    ProfileGenerator --> ProfileView
+    SabaModel & QwenModel --> LLMView
+    PlotlyJS --> NetworkGraphView & TimelineView
+
+    classDef primary fill:#3498db,stroke:#2980b9,color:white
+    classDef secondary fill:#2ecc71,stroke:#27ae60,color:white
+    classDef api fill:#e74c3c,stroke:#c0392b,color:white
+    classDef processing fill:#f39c12,stroke:#d35400,color:white
+    classDef llm fill:#9b59b6,stroke:#8e44ad,color:white
+    classDef viz fill:#1abc9c,stroke:#16a085,color:white
+    
+    class UI,ProfileView,LLMView,NetworkGraphView,TimelineView primary
+    class AptosAPI,GroqAPI secondary
+    class ProfileAPI,LLMInsightsAPI,NetworkAPI,TimelineAPI api
+    class TxProcessor,ProfileGenerator processing
+    class SabaModel,QwenModel llm
+    class NetworkX,PlotlyJS viz
+```
 
 ## Technical Implementation
 
