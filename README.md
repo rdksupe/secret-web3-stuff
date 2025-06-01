@@ -221,10 +221,21 @@ python app.py
 3. Enter an Aptos wallet address and analyze
 4. The UI will progressively load different insights as they become available
 
+## Screenshots 
+![Screenshot 2025-05-29 151202](https://github.com/user-attachments/assets/602754d4-4b1f-43cb-b365-3302bf780228)
+
+![Screenshot 2025-05-29 151214](https://github.com/user-attachments/assets/dafebae0-8299-41db-8c54-14723b3560a1)
+
+
+![Screenshot 2025-05-29 151150](https://github.com/user-attachments/assets/c19e4da9-8b3f-4211-99b5-ff01884be472)
+
+![Screenshot 2025-05-29 151228](https://github.com/user-attachments/assets/125151b8-d272-40fe-bbf9-814717623c44)
+
 
 ## Dependencies
 
 See `requirements.txt` for a complete list of dependencies.
+
 
 ## License
 
